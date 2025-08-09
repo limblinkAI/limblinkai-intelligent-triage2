@@ -1,9 +1,18 @@
-
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 
 app = FastAPI()
+
+# ✅ Enable CORS so your HTML or Bubble app can call the API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],      # you can replace "*" with your specific domains later
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class PatientCase(BaseModel):
     wound_grade: int
@@ -31,6 +40,7 @@ def evaluate_case(case: PatientCase):
     else:
         wIfI_stage = 4
 
+    # Rule-based AI logic (with IDSA/PEDIS consideration)
     if (case.CRP or 0) > 150 and (case.Procalcitonin or 0) > 1.0 and wIfI_stage == 4:
         risk = "Critical"
         rec = "Severe infection per IDSA/PEDIS. Admit for IV antibiotics, surgical source control, and vascular consult."
